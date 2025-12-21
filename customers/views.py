@@ -71,13 +71,28 @@ def upload_customers_view(request):
             try:
                 decoded = file.read().decode('utf-8')
                 reader = csv.DictReader(io.StringIO(decoded))
+                required_columns = {"external_id"}
+                missing_columns = required_columns - set(reader.fieldnames or [])
+                if missing_columns:
+                    messages.error(
+                        request,
+                        "Missing required columns: "
+                        + ", ".join(sorted(missing_columns))
+                    )
+                    return render(request, "customers/upload.html", {"form": form})
 
                 count = 0
+                skipped = 0
 
                 for row in reader:
+                    external_id = (row.get("external_id") or "").strip()
+                    if not external_id:
+                        skipped += 1
+                        continue
+
                     Customer.objects.update_or_create(
                         tenant=request.tenant,
-                        external_id=row.get("external_id"),
+                        external_id=external_id,
                         defaults={
                             "email": row.get("email"),
                             "signup_date": parse_date(row.get("signup_date")),
@@ -91,6 +106,11 @@ def upload_customers_view(request):
                     count += 1
 
                 generate_churn_predictions(request.tenant)
+                if skipped:
+                    messages.warning(
+                        request,
+                        f"Skipped {skipped} rows missing external_id."
+                    )
                 messages.success(
                     request,
                     f"Successfully imported {count} customers and updated churn risk."
