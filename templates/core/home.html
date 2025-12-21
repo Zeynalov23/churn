@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Welcome, {{ user.username }}!</h1>
+<p>This will be your dashboard.</p>
+
+{% if request.tenant %}
+<p>You belong to tenant: <strong>{{ request.tenant.name }}</strong></p>
+{% endif %}
+
+{% endblock %}

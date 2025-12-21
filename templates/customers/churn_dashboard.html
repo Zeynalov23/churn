@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Churn Risk Dashboard{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Churn Risk Dashboard</h2>
+        <!-- STEP 8.4: Trust signals -->
+        <span class="badge bg-secondary">Explainable AI</span>
+        <span class="badge bg-info">Early Warning System</span>
+    </div>
+
+    <a href="{% url 'run_churn_scoring' %}" class="btn btn-primary">
+        Recalculate Churn Risk
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<!-- CHARTS -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {{ risk_chart|safe }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {% if revenue_chart %}
+                    {{ revenue_chart|safe }}
+                {% else %}
+                    <div class="alert alert-secondary text-center mb-0">
+                        No revenue at risk
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {{ trend_chart|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI CARDS -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Customers at Risk</h6>
+                <h3 class="mb-0">{{ predictions|length }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Total Revenue at Risk</h6>
+                <h3 class="mb-0">€{{ total_revenue_at_risk|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Early Warnings</h6>
+                <h3 class="mb-0">
+                    {% if has_early_warnings %}
+                        Yes
+                    {% else %}
+                        No
+                    {% endif %}
+                </h3>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-striped mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Risk Score</th>
+                    <th>Risk Level</th>
+                    <th>Reasons</th>
+                    <th>Revenue at Risk</th>
+                    <th>Recommended Action</th>
+                    <th>Trend</th>
+                    <th>Early Warning</th>
+                    <th>Days in Risk</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in predictions %}
+                <tr>
+                    <td>{{ p.customer.external_id }}</td>
+                    <td>{{ p.customer.email }}</td>
+                    <td>{{ p.risk_score|floatformat:2 }}</td>
+
+                    <td>
+                        {% if p.risk_level == "high" %}
+                            <span class="badge bg-danger">High</span>
+                        {% elif p.risk_level == "medium" %}
+                            <span class="badge bg-warning text-dark">Medium</span>
+                        {% else %}
+                            <span class="badge bg-success">Low</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <ul class="mb-0 small">
+                            {% for r in p.reasons %}
+                                <li>{{ r }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+
+                    <td>€{{ p.revenue_at_risk|floatformat:2 }}</td>
+
+                    <td>
+                        <span class="small">{{ p.recommended_action }}</span>
+                    </td>
+
+                    <td>
+                        {% if p.risk_trend == "worsening" %}
+                            <span class="badge bg-danger">Worsening</span>
+                        {% elif p.risk_trend == "improving" %}
+                            <span class="badge bg-success">Improving</span>
+                        {% elif p.risk_trend == "stable" %}
+                            <span class="badge bg-secondary">Stable</span>
+                        {% else %}
+                            <span class="badge bg-info">New</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if p.early_warning %}
+                            <span class="badge bg-warning text-dark">⚠ Early</span>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                    <td>{{ p.days_in_risk }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

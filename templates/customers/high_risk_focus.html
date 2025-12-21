@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>High-Risk Customers (Immediate Attention)</h2>
+
+{% for p in predictions %}
+<div class="card mb-3 border-danger">
+    <div class="card-body">
+        <h5>{{ p.customer.email }}</h5>
+        <p>
+            <strong>Risk:</strong> {{ p.risk_score|floatformat:2 }}<br>
+            <strong>Revenue at Risk:</strong> €{{ p.revenue_at_risk|floatformat:2 }}<br>
+            <strong>Action:</strong> {{ p.recommended_action }}
+        </p>
+        <ul>
+            {% for r in p.reasons %}
+                <li>{{ r }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

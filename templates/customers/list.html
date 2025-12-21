@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Your Customers</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Signup</th>
+            <th>Last Active</th>
+            <th>Spend</th>
+            <th>Usage</th>
+            <th>Churned</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for c in customers %}
+        <tr>
+            <td>{{ c.external_id }}</td>
+            <td>{{ c.email }}</td>
+            <td>{{ c.signup_date }}</td>
+            <td>{{ c.last_active_date }}</td>
+            <td>{{ c.monthly_spend }}</td>
+            <td>{{ c.feature_usage_score }}</td>
+            <td>{{ c.churned }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'customer_upload' %}" class="btn btn-secondary">Upload New CSV</a>
+
+{% endblock %}
