@@ -71,8 +71,10 @@ def upload_customers_view(request):
             try:
                 decoded = file.read().decode('utf-8')
                 reader = csv.DictReader(io.StringIO(decoded))
+                raw_fieldnames = reader.fieldnames or []
+                normalized_fieldnames = [normalize_csv_header(name) for name in raw_fieldnames]
                 required_columns = {"external_id"}
-                missing_columns = required_columns - set(reader.fieldnames or [])
+                missing_columns = required_columns - set(normalized_fieldnames)
                 if missing_columns:
                     messages.error(
                         request,
@@ -85,7 +87,11 @@ def upload_customers_view(request):
                 skipped = 0
 
                 for row in reader:
-                    external_id = (row.get("external_id") or "").strip()
+                    normalized_row = {
+                        normalize_csv_header(key): value
+                        for key, value in row.items()
+                    }
+                    external_id = (normalized_row.get("external_id") or "").strip()
                     if not external_id:
                         skipped += 1
                         continue
@@ -94,13 +100,15 @@ def upload_customers_view(request):
                         tenant=request.tenant,
                         external_id=external_id,
                         defaults={
-                            "email": row.get("email"),
-                            "signup_date": parse_date(row.get("signup_date")),
-                            "last_active_date": parse_date(row.get("last_active_date")),
-                            "subscription_type": row.get("subscription_type"),
-                            "monthly_spend": safe_float(row.get("monthly_spend")),
-                            "feature_usage_score": safe_float(row.get("feature_usage_score")),
-                            "churned": parse_bool(row.get("churned")),
+                            "email": normalized_row.get("email"),
+                            "signup_date": parse_date(normalized_row.get("signup_date")),
+                            "last_active_date": parse_date(normalized_row.get("last_active_date")),
+                            "subscription_type": normalized_row.get("subscription_type"),
+                            "monthly_spend": safe_float(normalized_row.get("monthly_spend")),
+                            "feature_usage_score": safe_float(
+                                normalized_row.get("feature_usage_score")
+                            ),
+                            "churned": parse_bool(normalized_row.get("churned")),
                         }
                     )
                     count += 1
@@ -215,3 +223,9 @@ def parse_bool(value):
     if not value:
         return False
     return value.lower() in ("1", "true", "yes")
+
+
+def normalize_csv_header(value):
+    if value is None:
+        return ""
+    return value.strip().lstrip("\ufeff").lower()
