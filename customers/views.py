@@ -16,51 +16,8 @@ from .recommendations import recommend_action
 from .trends import analyze_trend, calculate_days_in_risk
 from .analytics import risk_level_distribution, revenue_at_risk_chart, trend_overview
 
-@never_cache
-@login_required
-def upload_customers_view(request):
-    if request.method == "POST":
-        form = CustomerUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = form.cleaned_data['file']
 
-            try:
-                decoded = file.read().decode('utf-8')
-                reader = csv.DictReader(io.StringIO(decoded))
-
-                count = 0
-
-                for row in reader:
-                    Customer.objects.update_or_create(
-                        tenant=request.tenant,
-                        external_id=row.get("external_id"),
-                        defaults={
-                            "email": row.get("email"),
-                            "signup_date": parse_date(row.get("signup_date")),
-                            "last_active_date": parse_date(row.get("last_active_date")),
-                            "subscription_type": row.get("subscription_type"),
-                            "monthly_spend": safe_float(row.get("monthly_spend")),
-                            "feature_usage_score": safe_float(row.get("feature_usage_score")),
-                            "churned": parse_bool(row.get("churned")),
-                        }
-                    )
-                    count += 1
-
-                messages.success(request, f"Successfully imported {count} customers!")
-                return redirect("customer_list")
-
-            except Exception as e:
-                messages.error(request, f"Error parsing CSV: {e}")
-
-    else:
-        form = CustomerUploadForm()
-
-    return render(request, "customers/upload.html", {"form": form})
-
-@never_cache
-@login_required
-def run_risk_scoring_view(request):
-    tenant = request.tenant
+def generate_churn_predictions(tenant):
     customers = Customer.objects.filter(tenant=tenant)
 
     for customer in customers:
@@ -69,7 +26,6 @@ def run_risk_scoring_view(request):
         revenue_at_risk = score * monthly_spend
         action = recommend_action(customer, level, reasons)
 
-        # Get last prediction (if exists)
         last_prediction = (
             ChurnPrediction.objects
             .filter(customer=customer)
@@ -103,6 +59,76 @@ def run_risk_scoring_view(request):
             early_warning=early_warning,
             days_in_risk=days_in_risk,
         )
+
+@never_cache
+@login_required
+def upload_customers_view(request):
+    if request.method == "POST":
+        form = CustomerUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data['file']
+
+            try:
+                decoded = file.read().decode('utf-8')
+                reader = csv.DictReader(io.StringIO(decoded))
+                required_columns = {"external_id"}
+                missing_columns = required_columns - set(reader.fieldnames or [])
+                if missing_columns:
+                    messages.error(
+                        request,
+                        "Missing required columns: "
+                        + ", ".join(sorted(missing_columns))
+                    )
+                    return render(request, "customers/upload.html", {"form": form})
+
+                count = 0
+                skipped = 0
+
+                for row in reader:
+                    external_id = (row.get("external_id") or "").strip()
+                    if not external_id:
+                        skipped += 1
+                        continue
+
+                    Customer.objects.update_or_create(
+                        tenant=request.tenant,
+                        external_id=external_id,
+                        defaults={
+                            "email": row.get("email"),
+                            "signup_date": parse_date(row.get("signup_date")),
+                            "last_active_date": parse_date(row.get("last_active_date")),
+                            "subscription_type": row.get("subscription_type"),
+                            "monthly_spend": safe_float(row.get("monthly_spend")),
+                            "feature_usage_score": safe_float(row.get("feature_usage_score")),
+                            "churned": parse_bool(row.get("churned")),
+                        }
+                    )
+                    count += 1
+
+                generate_churn_predictions(request.tenant)
+                if skipped:
+                    messages.warning(
+                        request,
+                        f"Skipped {skipped} rows missing external_id."
+                    )
+                messages.success(
+                    request,
+                    f"Successfully imported {count} customers and updated churn risk."
+                )
+                return redirect("churn_dashboard")
+
+            except Exception as e:
+                messages.error(request, f"Error parsing CSV: {e}")
+
+    else:
+        form = CustomerUploadForm()
+
+    return render(request, "customers/upload.html", {"form": form})
+
+@never_cache
+@login_required
+def run_risk_scoring_view(request):
+    generate_churn_predictions(request.tenant)
 
     messages.success(request, "Churn trends updated successfully.")
     return redirect("churn_dashboard")
@@ -189,4 +215,3 @@ def parse_bool(value):
     if not value:
         return False
     return value.lower() in ("1", "true", "yes")
-
