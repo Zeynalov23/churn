@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}At-Risk Customers | ChurnIQ{% endblock %}
+
+{% block page_header %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h4 mb-1">At-Risk Customers</h1>
+        <p class="text-muted small mb-0">Customers requiring attention based on recent churn signals</p>
+    </div>
+    <div class="text-muted small">
+        Mock data — sorted by severity and revenue
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="border rounded p-3 mb-3 bg-light">
+    <div class="row g-3 align-items-center">
+        <div class="col-12 col-md-4">
+            <label class="form-label fw-semibold small mb-1">Risk level</label>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">High</span>
+                <span class="badge bg-warning text-dark">Medium</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label fw-semibold small mb-1">Last activity</label>
+            <div class="text-muted small">Inactive &gt; 14 days</div>
+        </div>
+        <div class="col-12 col-md-4">
+            <label class="form-label fw-semibold small mb-1">Plan</label>
+            <div class="text-muted small">Pro / Growth / Enterprise</div>
+        </div>
+    </div>
+</div>
+
+<div class="list-group">
+    {% for customer in customers %}
+        <div class="list-group-item d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                    <strong class="fs-6">{{ customer.name }}</strong>
+                    <span class="badge {% if customer.risk_level == 'High' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                        {{ customer.risk_level }} ({{ customer.risk_score }}%)
+                    </span>
+                </div>
+                <div class="text-muted small">
+                    MRR: {{ customer.monthly_revenue }} • Reason: {{ customer.reason }}
+                </div>
+            </div>
+            <a class="btn btn-outline-primary btn-sm" href="{% url 'customer_detail' customer.id %}">View details</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
