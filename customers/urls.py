@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import upload_customers_view, customer_list_view, run_risk_scoring_view, churn_dashboard_view, high_risk_focus_view
+from .views import upload_customers_view, customer_list_view, run_risk_scoring_view, churn_dashboard_view, high_risk_focus_view, customer_detail_view, at_risk_customers_view
 
 
 urlpatterns = [
@@ -8,5 +8,7 @@ urlpatterns = [
     path("churn/run/", run_risk_scoring_view, name="run_churn_scoring"),
     path("churn/", churn_dashboard_view, name="churn_dashboard"),
     path("churn/high-risk/", high_risk_focus_view, name="high_risk_focus"),
+    path("at-risk/", at_risk_customers_view, name="at_risk_customers"),
+    path("<int:customer_id>/", customer_detail_view, name="customer_detail"),
 
 ]
