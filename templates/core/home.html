@@ -55,9 +55,9 @@
                                 {{ customer.risk_level }}
                             </span>
                         </div>
-                        <div class="text-muted small">MRR: {{ customer.monthly_revenue }} • Reason: {{ customer.reason }}</div>
+                        <div class="text-muted small">MRR: {{ customer.mrr }} • Reason: {{ customer.reason }}</div>
                     </div>
-                    <a class="btn btn-sm btn-outline-primary" href="#">View details</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'customer_detail' customer.id %}">View details</a>
                 </div>
             {% empty %}
                 <div class="list-group-item text-muted">No focus accounts yet.</div>

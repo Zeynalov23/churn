@@ -13,33 +13,43 @@ def churn_dashboard_view(request):
 
     focus_customers = [
         {
+            "id": 101,
             "name": "Acme Health",
             "risk_level": "High",
-            "monthly_revenue": "$12,400",
+            "risk_score": 82,
+            "mrr": "$12,400",
             "reason": "Usage dropped 35% vs last month",
         },
         {
+            "id": 102,
             "name": "OrbitSoft",
             "risk_level": "High",
-            "monthly_revenue": "$9,800",
+            "risk_score": 76,
+            "mrr": "$9,800",
             "reason": "NPS fell to 4 — waiting on support fix",
         },
         {
+            "id": 103,
             "name": "BrightBank",
             "risk_level": "Medium",
-            "monthly_revenue": "$7,200",
+            "risk_score": 61,
+            "mrr": "$7,200",
             "reason": "Executive sponsor left the account",
         },
         {
+            "id": 104,
             "name": "Northwind Retail",
             "risk_level": "Medium",
-            "monthly_revenue": "$6,450",
+            "risk_score": 58,
+            "mrr": "$6,450",
             "reason": "Churn risk model flagged late invoices",
         },
         {
+            "id": 105,
             "name": "Pioneer Labs",
             "risk_level": "Medium",
-            "monthly_revenue": "$5,900",
+            "risk_score": 54,
+            "mrr": "$5,900",
             "reason": "Support tickets trending up week-over-week",
         },
     ]
