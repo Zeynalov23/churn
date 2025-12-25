@@ -91,6 +91,11 @@
                         <a class="nav-link" href="/">Dashboard</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link{% if request.path.startswith('/customers/at-risk') %} active{% endif %}" href="{% url 'at_risk_customers' %}">
+                            At-Risk Customers
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'churn_dashboard' %}">
                             Churn Risk
                         </a>
