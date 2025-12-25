@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Detail | ChurnIQ{% endblock %}
+
+{% block page_header %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h4 mb-1">{{ customer.name }}</h1>
+        <div class="text-muted small">
+            At risk since: {{ customer.at_risk_since }} • Plan: {{ customer.plan_name }} — {{ customer.monthly_revenue }}
+        </div>
+    </div>
+    <div class="text-end">
+        <span class="badge {% if customer.risk_level == 'High' %}bg-danger{% else %}bg-warning text-dark{% endif %} px-3 py-2">
+            {{ customer.risk_level }} churn risk ({{ customer.risk_score }}%)
+        </span>
+        <div class="text-muted small mt-1">Confidence: {{ customer.confidence }}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="mb-4">
+            <h5>Why this customer is at risk</h5>
+            <ol class="mb-0 ps-3">
+                {% for reason in risk_reasons %}
+                    <li class="mb-2">{{ reason }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+
+        <div class="mb-4">
+            <h5>What would reduce the risk</h5>
+            <ul class="mb-0 ps-3">
+                {% for item in risk_reduction %}
+                    <li class="mb-2">{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div>
+            <h5>Customer timeline</h5>
+            <div class="border-start ps-3 ms-2">
+                {% for event in timeline %}
+                    <div class="mb-2 position-relative">
+                        <div class="position-absolute start-0 translate-middle bg-primary rounded-circle" style="width: 10px; height: 10px; margin-left: -14px; margin-top: 6px;"></div>
+                        <div>{{ event }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="p-3 border rounded bg-light h-100">
+            <h6 class="mb-3">Recommended action</h6>
+            <ul class="mb-3 ps-3">
+                {% for action in actions %}
+                    <li class="mb-2">{{ action }}</li>
+                {% endfor %}
+            </ul>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" type="button">Mark contacted</button>
+                <button class="btn btn-outline-secondary btn-sm" type="button">Schedule follow-up</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
