@@ -1,11 +1,88 @@
 {% extends "base.html" %}
 
+{% block title %}Dashboard | ChurnIQ{% endblock %}
+
+{% block page_header %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="h3 mb-1">Churn Dashboard</h1>
+        <p class="text-muted mb-0">Early warning view for {{ request.tenant.name }}</p>
+    </div>
+    <div class="text-muted small">
+        Last updated: just now (mock data)
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<h1>Welcome, {{ user.username }}!</h1>
-<p>This will be your dashboard.</p>
+<div class="row g-3 mb-3">
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 rounded border bg-light h-100">
+            <p class="text-muted mb-1 small">Customers at risk</p>
+            <h3 class="mb-0 fw-bold">{{ metrics.customers_at_risk }}</h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 rounded border bg-light h-100">
+            <p class="text-muted mb-1 small">Revenue at risk</p>
+            <h3 class="mb-0 fw-bold">{{ metrics.revenue_at_risk }}</h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 rounded border bg-light h-100">
+            <p class="text-muted mb-1 small">New risks this week</p>
+            <h3 class="mb-0 fw-bold">{{ metrics.new_risks }}</h3>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+        <div class="p-3 rounded border bg-light h-100">
+            <p class="text-muted mb-1 small">Resolved risks</p>
+            <h3 class="mb-0 fw-bold text-success">{{ metrics.resolved_risks }}</h3>
+        </div>
+    </div>
+</div>
 
-{% if request.tenant %}
-<p>You belong to tenant: <strong>{{ request.tenant.name }}</strong></p>
-{% endif %}
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <h5 class="mb-3">Your focus this week</h5>
+        <div class="list-group">
+            {% for customer in focus_customers %}
+                <div class="list-group-item d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <strong>{{ customer.name }}</strong>
+                            <span class="badge {% if customer.risk_level == 'High' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                                {{ customer.risk_level }}
+                            </span>
+                        </div>
+                        <div class="text-muted small">MRR: {{ customer.mrr }} • Reason: {{ customer.reason }}</div>
+                    </div>
+                    <a class="btn btn-sm btn-outline-primary" href="{% url 'customer_detail' customer.id %}">View details</a>
+                </div>
+            {% empty %}
+                <div class="list-group-item text-muted">No focus accounts yet.</div>
+            {% endfor %}
+        </div>
+    </div>
 
+    <div class="col-12 col-lg-5">
+        <h5 class="mb-3">Churn trend (mock)</h5>
+        <div class="p-3 rounded border bg-light">
+            <div class="d-flex align-items-end gap-3" style="height: 180px;">
+                {% for point in trend_points %}
+                    <div class="d-flex flex-column align-items-center flex-fill">
+                        <div class="bg-primary rounded-top" style="width: 28px; height: {{ point.value|add:'0' }}px;"></div>
+                        <small class="text-muted mt-2">{{ point.label }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="text-muted small mt-2">Illustrative only — replace with real chart data later.</div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5>Weekly summary</h5>
+    <p class="text-muted mb-0">{{ weekly_summary }}</p>
+</div>
 {% endblock %}
