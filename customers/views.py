@@ -256,6 +256,56 @@ def customer_detail_view(request, customer_id):
     return render(request, "customers/customer_detail.html", context)
 
 
+@never_cache
+@login_required
+def at_risk_customers_view(request):
+    customers = [
+        {
+            "id": 101,
+            "name": "Acme Health",
+            "risk_level": "High",
+            "risk_score": 82,
+            "monthly_revenue": "€12,400",
+            "reason": "Usage dropped 35% vs last month",
+        },
+        {
+            "id": 102,
+            "name": "OrbitSoft",
+            "risk_level": "High",
+            "risk_score": 76,
+            "monthly_revenue": "€9,800",
+            "reason": "NPS fell to 4 — waiting on support fix",
+        },
+        {
+            "id": 103,
+            "name": "BrightBank",
+            "risk_level": "Medium",
+            "risk_score": 61,
+            "monthly_revenue": "€7,200",
+            "reason": "Executive sponsor left",
+        },
+        {
+            "id": 104,
+            "name": "Northwind Retail",
+            "risk_level": "Medium",
+            "risk_score": 58,
+            "monthly_revenue": "€6,450",
+            "reason": "Late invoices flagged",
+        },
+        {
+            "id": 105,
+            "name": "Pioneer Labs",
+            "risk_level": "Medium",
+            "risk_score": 54,
+            "monthly_revenue": "€5,900",
+            "reason": "Support tickets rising week-over-week",
+        },
+    ]
+
+    context = {"customers": customers}
+    return render(request, "customers/at_risk_customers.html", context)
+
+
 def parse_date(value):
     if not value:
         return None
