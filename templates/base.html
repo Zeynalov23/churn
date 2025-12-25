@@ -90,6 +90,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/">Dashboard</a>
                     </li>
+                    {% url 'at_risk_customers' as at_risk_url %}
+                    <li class="nav-item">
+                        <a class="nav-link{% if request.path == at_risk_url %} active{% endif %}" href="{{ at_risk_url }}">
+                            At-Risk Customers
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link{% if request.path.startswith('/customers/at-risk') %} active{% endif %}" href="{% url 'at_risk_customers' %}">
                             At-Risk Customers
