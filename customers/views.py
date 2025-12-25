@@ -203,6 +203,59 @@ def customer_list_view(request):
     return render(request, "customers/list.html", {"customers": customers})
 
 
+@never_cache
+@login_required
+def customer_detail_view(request, customer_id):
+    # Mock data; replace with real lookup later
+    customer = {
+        "id": customer_id,
+        "name": "Acme Health",
+        "risk_level": "High",
+        "risk_score": 82,
+        "at_risk_since": "2025-03-03",
+        "plan_name": "Pro",
+        "monthly_revenue": "$12,400 MRR",
+        "confidence": "High",
+    }
+
+    risk_reasons = [
+        "Login frequency dropped 62% in the last 30 days",
+        "Core feature “Exports” has never been used",
+        "Last activity was 21 days ago",
+        "Two invoices paid late this quarter",
+    ]
+
+    risk_reduction = [
+        "If this customer logs in twice this week, churn risk drops to ~42%",
+        "Completing onboarding reduces churn risk by ~31%",
+        "Schedule a success review to surface quick wins",
+    ]
+
+    timeline = [
+        "Jan 10 – Account created",
+        "Jan 12 – First login",
+        "Jan 14 – Onboarding started",
+        "Feb 10 – Usage decline begins",
+        "Feb 22 – Last activity",
+        "Mar 03 – High churn risk detected",
+    ]
+
+    actions = [
+        "Personal email from founder",
+        "Offer a 15-minute onboarding call",
+    ]
+
+    context = {
+        "customer": customer,
+        "risk_reasons": risk_reasons,
+        "risk_reduction": risk_reduction,
+        "timeline": timeline,
+        "actions": actions,
+    }
+
+    return render(request, "customers/customer_detail.html", context)
+
+
 def parse_date(value):
     if not value:
         return None
